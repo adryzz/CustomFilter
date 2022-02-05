@@ -12,6 +12,7 @@ namespace CustomFilter;
 [PluginName("Custom Filter")]
 public class CustomFilter : IPositionedPipelineElement<IDeviceReport>
 {
+
     public FastExpression? CalcX = null;
     public FastExpression? CalcY = null;
     
@@ -23,14 +24,16 @@ public class CustomFilter : IPositionedPipelineElement<IDeviceReport>
     /// y = The Y coordinate
     /// lx = The last X coordinate
     /// ly = The last Y coordinate
+    /// mx = Max X coordinate
+    /// my = Max Y coordinate
     /// </summary>
     [OnDependencyLoad]
     public void Recompile()
     {
         Entity xExpr = XFunc;
         Entity yExpr = YFunc;
-        CalcX = xExpr.Compile("x", "y", "lx", "ly");
-        CalcY = yExpr.Compile("x", "y", "lx", "ly");
+        CalcX = xExpr.Compile("x", "y", "lx", "ly", "mx", "my");
+        CalcY = yExpr.Compile("x", "y", "lx", "ly", "mx", "my");
         Log.Debug("Custom Filter", "Recompiled all functions");
     }
     
@@ -38,13 +41,14 @@ public class CustomFilter : IPositionedPipelineElement<IDeviceReport>
     {
         if (value is IAbsolutePositionReport report)
         {
+            var digitizer = TabletReference.Properties.Specifications.Digitizer;
             //Compiled expressions return a Complex, so we need to downcast it
             Vector2 pos = report.Position;
             if (CalcX != null)
-                pos.X = (float)CalcX.Call(report.Position.X, report.Position.Y, LastPos.X, LastPos.Y).Real;
+                pos.X = (float)CalcX.Call(report.Position.X, report.Position.Y, LastPos.X, LastPos.Y, digitizer.MaxX, digitizer.MaxY).Real;
 
             if (CalcY != null)
-                pos.Y = (float)CalcY.Call(report.Position.X, report.Position.Y, LastPos.X, LastPos.Y).Real;
+                pos.Y = (float)CalcY.Call(report.Position.X, report.Position.Y, LastPos.X, LastPos.Y, digitizer.MaxX, digitizer.MaxY).Real;
 
             LastPos = report.Position;
             report.Position = pos;
@@ -57,21 +61,28 @@ public class CustomFilter : IPositionedPipelineElement<IDeviceReport>
     }
 
     public event Action<IDeviceReport>? Emit;
-    public PipelinePosition Position { get; }
+    public PipelinePosition Position => PipelinePosition.PreTransform;
     
-    [Property("X coordinate equation"), DefaultPropertyValue("x"), ToolTip(
+    [Property("X coordinate polynomial"), DefaultPropertyValue("x"), ToolTip(
          "A polynomial that calculates the X coordinate\n" +
          "x = The X coordinate\n" +
          "y = The Y coordinate\n" +
          "lx = The last X coordinate\n" +
-         "ly = The last Y coordinate")]
+         "ly = The last Y coordinate" +
+         "mx = Max X coordinate" +
+         "my = Max Y coordinate")]
     public string XFunc { get; set; }
     
-    [Property("Y coordinate equation"), DefaultPropertyValue("y"), ToolTip(
+    [Property("Y coordinate polynomial"), DefaultPropertyValue("y"), ToolTip(
          "A polynomial that calculates the Y coordinate\n" +
          "x = The X coordinate\n" +
          "y = The Y coordinate\n" +
          "lx = The last X coordinate\n" +
-         "ly = The last Y coordinate")]
+         "ly = The last Y coordinate" +
+         "mx = Max X coordinate" +
+         "my = Max Y coordinate")]
     public string YFunc { get; set; }
+    
+    [TabletReference]
+    public TabletReference TabletReference { get; set; }
 }
