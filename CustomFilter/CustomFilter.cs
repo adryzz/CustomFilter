@@ -62,16 +62,16 @@ public class CustomFilter : IPositionedPipelineElement<IDeviceReport>
     [Property("X coordinate equation"), DefaultPropertyValue("x"), ToolTip(
          "A polynomial that calculates the X coordinate\n" +
          "x = The X coordinate\n" +
-         "y The Y coordinate\n" +
-         "lx The last X coordinate\n" +
-         "y The Y coordinate")]
+         "y = The Y coordinate\n" +
+         "lx = The last X coordinate\n" +
+         "ly = The last Y coordinate")]
     public string XFunc { get; set; }
     
     [Property("Y coordinate equation"), DefaultPropertyValue("y"), ToolTip(
          "A polynomial that calculates the Y coordinate\n" +
          "x = The X coordinate\n" +
-         "y The Y coordinate\n" +
-         "lx The last X coordinate\n" +
-         "y The Y coordinate")]
+         "y = The Y coordinate\n" +
+         "lx = The last X coordinate\n" +
+         "ly = The last Y coordinate")]
     public string YFunc { get; set; }
 }
