@@ -8,6 +8,7 @@
 
     <ItemGroup>
       <PackageReference Include="AngouriMath" Version="1.4.0-preview.3" />
+      <PackageReference Include="CircularBuffer" Version="1.2.1" />
       <PackageReference Include="OpenTabletDriver.Plugin" Version="0.6.0.2" />
     </ItemGroup>
 
