@@ -68,8 +68,8 @@ public class CustomFilter : IPositionedPipelineElement<IDeviceReport>
          "x = The X coordinate\n" +
          "y = The Y coordinate\n" +
          "lx = The last X coordinate\n" +
-         "ly = The last Y coordinate" +
-         "mx = Max X coordinate" +
+         "ly = The last Y coordinate\n" +
+         "mx = Max X coordinate\n" +
          "my = Max Y coordinate")]
     public string XFunc { get; set; }
     
@@ -78,8 +78,8 @@ public class CustomFilter : IPositionedPipelineElement<IDeviceReport>
          "x = The X coordinate\n" +
          "y = The Y coordinate\n" +
          "lx = The last X coordinate\n" +
-         "ly = The last Y coordinate" +
-         "mx = Max X coordinate" +
+         "ly = The last Y coordinate\n" +
+         "mx = Max X coordinate\n" +
          "my = Max Y coordinate")]
     public string YFunc { get; set; }
     
