@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomFilter", "CustomFilter\CustomFilter.csproj", "{4985F622-B133-4483-B79C-3365BE1A6074}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4985F622-B133-4483-B79C-3365BE1A6074}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4985F622-B133-4483-B79C-3365BE1A6074}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4985F622-B133-4483-B79C-3365BE1A6074}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4985F622-B133-4483-B79C-3365BE1A6074}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
