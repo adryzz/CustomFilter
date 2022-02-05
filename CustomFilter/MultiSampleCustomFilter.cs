@@ -11,7 +11,7 @@ using CircularBuffer;
 
 namespace CustomFilter;
 
-[PluginName("Custom Filter")]
+[PluginName("Custom Filter (Multi-Sample)")]
 public class MultiSampleCustomFilter : IPositionedPipelineElement<IDeviceReport>
 {
 
