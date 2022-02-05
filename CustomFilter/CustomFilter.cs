@@ -20,12 +20,6 @@ public class CustomFilter : IPositionedPipelineElement<IDeviceReport>
     
     /// <summary>
     /// Recompiles the X and Y polynomials to a function.
-    /// x = The X coordinate
-    /// y = The Y coordinate
-    /// lx = The last X coordinate
-    /// ly = The last Y coordinate
-    /// mx = Max X coordinate
-    /// my = Max Y coordinate
     /// </summary>
     [OnDependencyLoad]
     public void Recompile()
