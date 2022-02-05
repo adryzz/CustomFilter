@@ -52,7 +52,7 @@ public class CustomFilter : IPositionedPipelineElement<IDeviceReport>
         }
         else
         {
-            //Emit?.Invoke(value);
+            Emit?.Invoke(value);
         }
     }
 
