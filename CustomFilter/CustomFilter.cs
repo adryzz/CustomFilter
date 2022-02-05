@@ -1,6 +1,7 @@
 ﻿using System.Numerics;
 using AngouriMath;
 using AngouriMath.Core;
+using AngouriMath.Extensions;
 using OpenTabletDriver.Plugin;
 using OpenTabletDriver.Plugin.Attributes;
 using OpenTabletDriver.Plugin.DependencyInjection;
@@ -26,8 +27,28 @@ public class CustomFilter : IPositionedPipelineElement<IDeviceReport>
     {
         Entity xExpr = XFunc;
         Entity yExpr = YFunc;
-        CalcX = xExpr.Compile("x", "y", "lx", "ly", "mx", "my");
-        CalcY = yExpr.Compile("x", "y", "lx", "ly", "mx", "my");
+        try
+        {
+            CalcX = xExpr.Compile("x", "y", "lx", "ly", "mx", "my");
+        }
+        catch (Exception ex)
+        {
+            CalcX = "x".Compile("x", "y", "lx", "ly", "mx", "my");
+            Log.Exception(ex);
+            Log.WriteNotify("Custom Filter", "Error while compiling X polynomial! Resetting...", LogLevel.Error);
+        }
+        
+        try
+        {
+            CalcY = yExpr.Compile("x", "y", "lx", "ly", "mx", "my");
+        }
+        catch (Exception ex)
+        {
+            CalcY = "y".Compile("x", "y", "lx", "ly", "mx", "my");
+            Log.Exception(ex);
+            Log.WriteNotify("Custom Filter", "Error while compiling Y polynomial! Resetting...", LogLevel.Error);
+        }
+        
         Log.Debug("Custom Filter", "Recompiled all functions");
     }
     
