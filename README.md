@@ -3,7 +3,7 @@ The best [OpenTabletDriver](https://github.com/OpentabletDriver/OpenTabletDriver
 
 [![Total Download Count](https://img.shields.io/github/downloads/adryzz/CustomFilter/total.svg)](https://github.com/adryzz/CustomFilter/releases)
 
-Allows you to use any mathematical expression that can be evaluated as a number as a filtering stage!
+Allows you to use any mathematical expression that can be evaluated to a number as a filtering stage!
 
 Uses [AngouriMath](https://github.com/asc-community/AngouriMath) to automatically compile your expressions into code at runtime, to achieve the best performance possible.
 
