@@ -1,6 +1,7 @@
 # CustomFilter
-
 The best [OpenTabletDriver](https://github.com/OpentabletDriver/OpenTabletDriver) filter to ever grace this planet!
+
+[![Total Download Count](https://img.shields.io/github/downloads/adryzz/CustomFilter/total.svg)](https://github.com/adryzz/CustomFilter/releases)
 
 Allows you to use any mathematical expression that can be evaluated as a number as a filtering stage!
 
@@ -10,7 +11,7 @@ Uses [AngouriMath](https://github.com/asc-community/AngouriMath) to automaticall
 
 ![image](https://user-images.githubusercontent.com/46694241/152674287-80f94d11-5271-44d7-a11a-a5a9fabe610a.png)
 
-The Simple Mode is the fastest but has a few limitations.
+The Simple Mode is the fastest but is limited in the number of samples you can use.
 Here's the supported parameters for both expressions:
 
 - `x` = The X coordinate.
