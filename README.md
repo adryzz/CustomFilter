@@ -21,7 +21,7 @@ Here's the supported parameters for both expressions:
 - `mx` = The max X coordinate.
 - `my` = The max Y coordinate.
 - `lx` = The last X coordinate.
-- `ly` = The last X coordinate.
+- `ly` = The last Y coordinate.
 
 #### Example: EMA smoothing
 ![image](https://user-images.githubusercontent.com/46694241/152674407-eaccdf71-6fb2-448a-9eb4-6bc1c820bac0.png)
