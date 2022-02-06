@@ -7,6 +7,8 @@ Allows you to use any mathematical expression that can be evaluated as a number 
 
 Uses [AngouriMath](https://github.com/asc-community/AngouriMath) to automatically compile your expressions into code at runtime, to achieve the best performance possible.
 
+All the math is done on [complex numbers](https://en.wikipedia.org/wiki/Complex_number), but the end result is just the [real](https://docs.microsoft.com/en-us/dotnet/api/system.numerics.complex.real?view=net-6.0) part of it
+
 ## Simple mode
 
 ![image](https://user-images.githubusercontent.com/46694241/152674287-80f94d11-5271-44d7-a11a-a5a9fabe610a.png)
