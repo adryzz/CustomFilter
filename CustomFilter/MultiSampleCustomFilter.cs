@@ -36,8 +36,8 @@ public class MultiSampleCustomFilter : IPositionedPipelineElement<IDeviceReport>
         parameters[3] = "my";
         for (int i = 0; i < SampleCount; i++)
         {
-            parameters[3 + i] = "x" + i;
-            parameters[4 + i] = "y" + i;
+            parameters[4 + i] = "x" + i;
+            parameters[5 + i] = "y" + i;
         }
         
         Entity xExpr = XFunc;
