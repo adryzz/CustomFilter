@@ -46,6 +46,12 @@ Here's the supported parameters for both expressions:
 
 `mp` = Max pressure
 
+`cx` = Last computed X coordinate
+
+`cy` = Last computed Y coordinate
+
+`cp` = Last computed pressure
+
 #### Example: EMA smoothing
 ![image](https://user-images.githubusercontent.com/46694241/152674407-eaccdf71-6fb2-448a-9eb4-6bc1c820bac0.png)
 

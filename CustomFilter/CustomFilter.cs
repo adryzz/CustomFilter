@@ -27,9 +27,12 @@ public class CustomFilter : IPositionedPipelineElement<IDeviceReport>
                                     "ld = The last hover distance\n" +
                                     "mx = Max X coordinate\n" +
                                     "my = Max Y coordinate\n" + 
-                                    "mp = Max pressure";
+                                    "mp = Max pressure\n" +
+                                    "cx = Last computed X coordinate\n" +
+                                    "cy = Last computed Y coordinate\n" +
+                                    "cp = Last computed pressure\n";
 
-    private readonly string[] variables = { "x", "y", "p", "tx", "ty", "d", "lx", "ly", "lp", "ltx", "lty", "ld", "mx", "my", "mp" };
+    private readonly string[] variables = { "x", "y", "p", "tx", "ty", "d", "lx", "ly", "lp", "ltx", "lty", "ld", "mx", "my", "mp", "cx", "cy", "cp" };
     
     public FastExpression? CalcX = null;
     public FastExpression? CalcY = null;
@@ -39,6 +42,8 @@ public class CustomFilter : IPositionedPipelineElement<IDeviceReport>
     public uint LastP = 0;
     public Vector2 LastT = Vector2.Zero;
     public uint LastD = 0;
+    public Vector2 LastComputedPos = Vector2.Zero;
+    public uint LastComputedPressure = 0;
 
     /// <summary>
     /// Recompiles the X and Y polynomials to a function.
@@ -112,13 +117,13 @@ public class CustomFilter : IPositionedPipelineElement<IDeviceReport>
             pressure = report.Pressure;
 
             if (CalcX != null)
-                pos.X = (float)CalcX.Call(report.Position.X, report.Position.Y, report.Pressure, tilt.X, tilt.Y, distance, LastPos.X, LastPos.Y, LastP, LastT.X, LastT.Y, LastD, digitizer.MaxX, digitizer.MaxY, pen.MaxPressure).Real;
+                pos.X = (float)CalcX.Call(report.Position.X, report.Position.Y, report.Pressure, tilt.X, tilt.Y, distance, LastPos.X, LastPos.Y, LastP, LastT.X, LastT.Y, LastD, digitizer.MaxX, digitizer.MaxY, pen.MaxPressure, LastComputedPos.X, LastComputedPos.Y, LastComputedPressure).Real;
             
             if (CalcY != null)
-                pos.Y = (float)CalcY.Call(report.Position.X, report.Position.Y, report.Pressure, tilt.X, tilt.Y, distance, LastPos.X, LastPos.Y, LastP, LastT.X, LastT.Y, LastD, digitizer.MaxX, digitizer.MaxY, pen.MaxPressure).Real;
+                pos.Y = (float)CalcY.Call(report.Position.X, report.Position.Y, report.Pressure, tilt.X, tilt.Y, distance, LastPos.X, LastPos.Y, LastP, LastT.X, LastT.Y, LastD, digitizer.MaxX, digitizer.MaxY, pen.MaxPressure, LastComputedPos.X, LastComputedPos.Y, LastComputedPressure).Real;
             
             if (CalcP != null)
-                pressure = (uint)CalcP.Call(report.Position.X, report.Position.Y, report.Pressure, tilt.X, tilt.Y, distance, LastPos.X, LastPos.Y, LastP, LastT.X, LastT.Y, LastD, digitizer.MaxX, digitizer.MaxY, pen.MaxPressure).Real;
+                pressure = (uint)CalcP.Call(report.Position.X, report.Position.Y, report.Pressure, tilt.X, tilt.Y, distance, LastPos.X, LastPos.Y, LastP, LastT.X, LastT.Y, LastD, digitizer.MaxX, digitizer.MaxY, pen.MaxPressure, LastComputedPos.X, LastComputedPos.Y, LastComputedPressure).Real;
             
             report.Pressure = pressure;
             report.Position = pos;
@@ -139,6 +144,9 @@ public class CustomFilter : IPositionedPipelineElement<IDeviceReport>
         }
 
         Emit?.Invoke(value);
+
+        LastComputedPos = pos;
+        LastComputedPressure = pressure;
     }
 
     public event Action<IDeviceReport>? Emit;
