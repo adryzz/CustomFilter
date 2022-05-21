@@ -11,7 +11,7 @@ All the math is done on [complex numbers](https://en.wikipedia.org/wiki/Complex_
 
 ## Simple mode
 
-![image](https://user-images.githubusercontent.com/46694241/152674287-80f94d11-5271-44d7-a11a-a5a9fabe610a.png)
+![image](https://user-images.githubusercontent.com/46694241/169646212-e162bbdf-99c4-428b-97a0-283034d05fed.png)
 
 The Simple Mode is the fastest but is limited in the number of samples you can use.
 Here's the supported parameters for both expressions:
