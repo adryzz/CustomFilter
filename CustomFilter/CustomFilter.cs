@@ -13,12 +13,33 @@ namespace CustomFilter;
 [PluginName("Custom Filter")]
 public class CustomFilter : IPositionedPipelineElement<IDeviceReport>
 {
+    private const string TOOLTIP =  "x = The X coordinate\n" +
+                                    "y = The Y coordinate\n" +
+                                    "p = The pressure\n" +
+                                    "tx = The tilt X component\n" +
+                                    "ty = The tilt Y component\n" +
+                                    "d = The hover distance\n" +
+                                    "lx = The last X coordinate\n" +
+                                    "ly = The last Y coordinate\n" +
+                                    "lp = The last pressure\n" +
+                                    "ltx = The last tilt X component\n" +
+                                    "lty = The last tilt Y component\n" +
+                                    "ld = The last hover distance\n" +
+                                    "mx = Max X coordinate\n" +
+                                    "my = Max Y coordinate\n" + 
+                                    "mp = Max pressure";
 
+    private readonly string[] variables = { "x", "y", "p", "tx", "ty", "d", "lx", "ly", "lp", "ltx", "lty", "ld", "mx", "my", "mp" };
+    
     public FastExpression? CalcX = null;
     public FastExpression? CalcY = null;
-    
+    public FastExpression? CalcP = null;
+
     public Vector2 LastPos = Vector2.Zero;
-    
+    public uint LastP = 0;
+    public Vector2 LastT = Vector2.Zero;
+    public uint LastD = 0;
+
     /// <summary>
     /// Recompiles the X and Y polynomials to a function.
     /// </summary>
@@ -27,77 +48,114 @@ public class CustomFilter : IPositionedPipelineElement<IDeviceReport>
     {
         Entity xExpr = XFunc;
         Entity yExpr = YFunc;
+        Entity pExpr = PFunc;
         try
         {
-            CalcX = xExpr.Compile("x", "y", "lx", "ly", "mx", "my");
+            CalcX = xExpr.Compile(variables);
         }
         catch (Exception ex)
         {
-            CalcX = "x".Compile("x", "y", "lx", "ly", "mx", "my");
+            CalcX = ((Entity)"x").Compile(variables);
             Log.Exception(ex);
             Log.WriteNotify("Custom Filter", "Error while compiling X polynomial! Resetting...", LogLevel.Error);
         }
         
         try
         {
-            CalcY = yExpr.Compile("x", "y", "lx", "ly", "mx", "my");
+            CalcY = yExpr.Compile(variables);
         }
         catch (Exception ex)
         {
-            CalcY = "y".Compile("x", "y", "lx", "ly", "mx", "my");
+            CalcY = ((Entity)"y").Compile(variables);
             Log.Exception(ex);
             Log.WriteNotify("Custom Filter", "Error while compiling Y polynomial! Resetting...", LogLevel.Error);
         }
         
+        try
+        {
+            CalcP = pExpr.Compile(variables);
+        }
+        catch (Exception ex)
+        {
+            CalcP = ((Entity)"p").Compile(variables);
+            Log.Exception(ex);
+            Log.WriteNotify("Custom Filter", "Error while compiling P polynomial! Resetting...", LogLevel.Error);
+        }
+
         Log.Debug("Custom Filter", "Recompiled all functions");
     }
     
     public void Consume(IDeviceReport value)
     {
-        if (value is IAbsolutePositionReport report)
+        var digitizer = TabletReference.Properties.Specifications.Digitizer;
+        var pen = TabletReference.Properties.Specifications.Pen;
+        
+        Vector2 pos = Vector2.Zero;
+        uint pressure = 0;
+        Vector2 tilt = Vector2.Zero;
+        uint distance = 0;
+
+        if (value is ITiltReport r1)
         {
-            var digitizer = TabletReference.Properties.Specifications.Digitizer;
+            tilt = r1.Tilt;
+        }
+
+        if (value is IProximityReport r2)
+        {
+            distance = r2.HoverDistance;
+        }
+        
+        if (value is ITabletReport report)
+        {
             //Compiled expressions return a Complex, so we need to downcast it
-            Vector2 pos = report.Position;
+            pos = report.Position;
+            pressure = report.Pressure;
+
             if (CalcX != null)
-                pos.X = (float)CalcX.Call(report.Position.X, report.Position.Y, LastPos.X, LastPos.Y, digitizer.MaxX, digitizer.MaxY).Real;
-
+                pos.X = (float)CalcX.Call(report.Position.X, report.Position.Y, report.Pressure, tilt.X, tilt.Y, distance, LastPos.X, LastPos.Y, LastP, LastT.X, LastT.Y, LastD, digitizer.MaxX, digitizer.MaxY, pen.MaxPressure).Real;
+            
             if (CalcY != null)
-                pos.Y = (float)CalcY.Call(report.Position.X, report.Position.Y, LastPos.X, LastPos.Y, digitizer.MaxX, digitizer.MaxY).Real;
-
-            LastPos = report.Position;
+                pos.Y = (float)CalcY.Call(report.Position.X, report.Position.Y, report.Pressure, tilt.X, tilt.Y, distance, LastPos.X, LastPos.Y, LastP, LastT.X, LastT.Y, LastD, digitizer.MaxX, digitizer.MaxY, pen.MaxPressure).Real;
+            
+            if (CalcP != null)
+                pressure = (uint)CalcP.Call(report.Position.X, report.Position.Y, report.Pressure, tilt.X, tilt.Y, distance, LastPos.X, LastPos.Y, LastP, LastT.X, LastT.Y, LastD, digitizer.MaxX, digitizer.MaxY, pen.MaxPressure).Real;
+            
+            report.Pressure = pressure;
             report.Position = pos;
-            Emit?.Invoke(report);
+
+            value = report;
         }
-        else
+        
+        if (value is ITiltReport r3)
         {
-            Emit?.Invoke(value);
+            r3.Tilt = tilt;
+            value = r3;
         }
+
+        if (value is IProximityReport r4)
+        {
+            r4.HoverDistance = distance;
+            value = r4;
+        }
+
+        Emit?.Invoke(value);
     }
 
     public event Action<IDeviceReport>? Emit;
     public PipelinePosition Position => PipelinePosition.PreTransform;
     
     [Property("X coordinate polynomial"), DefaultPropertyValue("x"), ToolTip(
-         "A polynomial that calculates the X coordinate\n" +
-         "x = The X coordinate\n" +
-         "y = The Y coordinate\n" +
-         "lx = The last X coordinate\n" +
-         "ly = The last Y coordinate\n" +
-         "mx = Max X coordinate\n" +
-         "my = Max Y coordinate")]
+         "A polynomial that calculates the X coordinate\n" + TOOLTIP)]
     public string XFunc { get; set; }
     
     [Property("Y coordinate polynomial"), DefaultPropertyValue("y"), ToolTip(
-         "A polynomial that calculates the Y coordinate\n" +
-         "x = The X coordinate\n" +
-         "y = The Y coordinate\n" +
-         "lx = The last X coordinate\n" +
-         "ly = The last Y coordinate\n" +
-         "mx = Max X coordinate\n" +
-         "my = Max Y coordinate")]
+         "A polynomial that calculates the Y coordinate\n" + TOOLTIP)]
     public string YFunc { get; set; }
     
+    [Property("Pressure polynomial"), DefaultPropertyValue("p"), ToolTip(
+         "A polynomial that calculates the pressure\n" + TOOLTIP)]
+    public string PFunc { get; set; }
+
     [TabletReference]
     public TabletReference TabletReference { get; set; }
 }
