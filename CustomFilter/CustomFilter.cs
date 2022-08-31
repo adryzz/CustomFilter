@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System.Collections.Generic;
+using System.Numerics;
 using AngouriMath;
 using AngouriMath.Core;
 using AngouriMath.Extensions;
@@ -100,6 +101,8 @@ public class CustomFilter : IPositionedPipelineElement<IDeviceReport>
         Vector2 tilt = Vector2.Zero;
         uint distance = 0;
 
+        //Log.Debug("Custom Filter", String.Format("got report type {0}", value.ToString()));
+
         if (value is ITiltReport r1)
         {
             tilt = r1.Tilt;
@@ -117,36 +120,44 @@ public class CustomFilter : IPositionedPipelineElement<IDeviceReport>
             pressure = report.Pressure;
 
             if (CalcX != null)
+            {
                 pos.X = (float)CalcX.Call(report.Position.X, report.Position.Y, report.Pressure, tilt.X, tilt.Y, distance, LastPos.X, LastPos.Y, LastP, LastT.X, LastT.Y, LastD, digitizer.MaxX, digitizer.MaxY, pen.MaxPressure, LastComputedPos.X, LastComputedPos.Y, LastComputedPressure).Real;
-            
+            }
             if (CalcY != null)
+            {
                 pos.Y = (float)CalcY.Call(report.Position.X, report.Position.Y, report.Pressure, tilt.X, tilt.Y, distance, LastPos.X, LastPos.Y, LastP, LastT.X, LastT.Y, LastD, digitizer.MaxX, digitizer.MaxY, pen.MaxPressure, LastComputedPos.X, LastComputedPos.Y, LastComputedPressure).Real;
-            
+            }
             if (CalcP != null)
+            {
                 pressure = (uint)CalcP.Call(report.Position.X, report.Position.Y, report.Pressure, tilt.X, tilt.Y, distance, LastPos.X, LastPos.Y, LastP, LastT.X, LastT.Y, LastD, digitizer.MaxX, digitizer.MaxY, pen.MaxPressure, LastComputedPos.X, LastComputedPos.Y, LastComputedPressure).Real;
-            
+            }
+
+            LastPos = report.Position;
+            LastP = report.Pressure;
             report.Pressure = pressure;
             report.Position = pos;
+
+            LastComputedPos = pos;
+            LastComputedPressure = pressure;
 
             value = report;
         }
         
         if (value is ITiltReport r3)
         {
+            LastT = r3.Tilt;
             r3.Tilt = tilt;
             value = r3;
         }
 
         if (value is IProximityReport r4)
         {
+            LastD = r4.HoverDistance;
             r4.HoverDistance = distance;
             value = r4;
         }
 
         Emit?.Invoke(value);
-
-        LastComputedPos = pos;
-        LastComputedPressure = pressure;
     }
 
     public event Action<IDeviceReport>? Emit;
