@@ -33,10 +33,12 @@ public class CustomFilter : IPositionedPipelineElement<IDeviceReport>
                                     "cp = Last computed pressure\n";
 
     private readonly string[] variables = { "x", "y", "p", "tx", "ty", "d", "lx", "ly", "lp", "ltx", "lty", "ld", "mx", "my", "mp", "cx", "cy", "cp" };
-    
+
     public FastExpression? CalcX = null;
     public FastExpression? CalcY = null;
     public FastExpression? CalcP = null;
+    public FastExpression? CalcTX = null;
+    public FastExpression? CalcTY = null;
 
     public Vector2 LastPos = Vector2.Zero;
     public uint LastP = 0;
@@ -54,6 +56,8 @@ public class CustomFilter : IPositionedPipelineElement<IDeviceReport>
         Entity xExpr = XFunc;
         Entity yExpr = YFunc;
         Entity pExpr = PFunc;
+        Entity txExpr = TXFunc;
+        Entity tyExpr = TYFunc;
         try
         {
             CalcX = xExpr.Compile(variables);
@@ -64,7 +68,7 @@ public class CustomFilter : IPositionedPipelineElement<IDeviceReport>
             Log.Exception(ex);
             Log.WriteNotify("Custom Filter", "Error while compiling X polynomial! Resetting...", LogLevel.Error);
         }
-        
+
         try
         {
             CalcY = yExpr.Compile(variables);
@@ -75,7 +79,7 @@ public class CustomFilter : IPositionedPipelineElement<IDeviceReport>
             Log.Exception(ex);
             Log.WriteNotify("Custom Filter", "Error while compiling Y polynomial! Resetting...", LogLevel.Error);
         }
-        
+
         try
         {
             CalcP = pExpr.Compile(variables);
@@ -87,14 +91,36 @@ public class CustomFilter : IPositionedPipelineElement<IDeviceReport>
             Log.WriteNotify("Custom Filter", "Error while compiling P polynomial! Resetting...", LogLevel.Error);
         }
 
+        try
+        {
+            CalcTX = txExpr.Compile(variables);
+        }
+        catch (Exception ex)
+        {
+            CalcTX = ((Entity)"tx").Compile(variables);
+            Log.Exception(ex);
+            Log.WriteNotify("Custom Filter", "Error while compiling TX polynomial! Resetting...", LogLevel.Error);
+        }
+
+        try
+        {
+            CalcTY = tyExpr.Compile(variables);
+        }
+        catch (Exception ex)
+        {
+            CalcTY = ((Entity)"ty").Compile(variables);
+            Log.Exception(ex);
+            Log.WriteNotify("Custom Filter", "Error while compiling TY polynomial! Resetting...", LogLevel.Error);
+        }
+
         Log.Debug("Custom Filter", "Recompiled all functions");
     }
-    
+
     public void Consume(IDeviceReport value)
     {
         var digitizer = TabletReference.Properties.Specifications.Digitizer;
         var pen = TabletReference.Properties.Specifications.Pen;
-        
+
         Vector2 pos = Vector2.Zero;
         uint pressure = 0;
         Vector2 tilt = Vector2.Zero;
@@ -109,7 +135,7 @@ public class CustomFilter : IPositionedPipelineElement<IDeviceReport>
         {
             distance = r2.HoverDistance;
         }
-        
+
         if (value is ITabletReport report)
         {
             //Compiled expressions return a Complex, so we need to downcast it
@@ -118,21 +144,27 @@ public class CustomFilter : IPositionedPipelineElement<IDeviceReport>
 
             if (CalcX != null)
                 pos.X = (float)CalcX.Call(report.Position.X, report.Position.Y, report.Pressure, tilt.X, tilt.Y, distance, LastPos.X, LastPos.Y, LastP, LastT.X, LastT.Y, LastD, digitizer.MaxX, digitizer.MaxY, pen.MaxPressure, LastComputedPos.X, LastComputedPos.Y, LastComputedPressure).Real;
-            
+
             if (CalcY != null)
                 pos.Y = (float)CalcY.Call(report.Position.X, report.Position.Y, report.Pressure, tilt.X, tilt.Y, distance, LastPos.X, LastPos.Y, LastP, LastT.X, LastT.Y, LastD, digitizer.MaxX, digitizer.MaxY, pen.MaxPressure, LastComputedPos.X, LastComputedPos.Y, LastComputedPressure).Real;
-            
+
             if (CalcP != null)
                 pressure = (uint)CalcP.Call(report.Position.X, report.Position.Y, report.Pressure, tilt.X, tilt.Y, distance, LastPos.X, LastPos.Y, LastP, LastT.X, LastT.Y, LastD, digitizer.MaxX, digitizer.MaxY, pen.MaxPressure, LastComputedPos.X, LastComputedPos.Y, LastComputedPressure).Real;
-            
+
             report.Pressure = pressure;
             report.Position = pos;
 
             value = report;
         }
-        
+
         if (value is ITiltReport r3)
         {
+            if (CalcTX != null)
+                tilt.X = (float)CalcTX.Call(pos.X, pos.Y, pressure, tilt.X, tilt.Y, distance, LastPos.X, LastPos.Y, LastP, LastT.X, LastT.Y, LastD, digitizer.MaxX, digitizer.MaxY, pen.MaxPressure, LastComputedPos.X, LastComputedPos.Y, LastComputedPressure).Real;
+
+            if (CalcTY != null)
+                tilt.Y = (float)CalcTY.Call(pos.X, pos.Y, pressure, tilt.X, tilt.Y, distance, LastPos.X, LastPos.Y, LastP, LastT.X, LastT.Y, LastD, digitizer.MaxX, digitizer.MaxY, pen.MaxPressure, LastComputedPos.X, LastComputedPos.Y, LastComputedPressure).Real;
+
             r3.Tilt = tilt;
             value = r3;
         }
@@ -151,18 +183,26 @@ public class CustomFilter : IPositionedPipelineElement<IDeviceReport>
 
     public event Action<IDeviceReport>? Emit;
     public PipelinePosition Position => PipelinePosition.PreTransform;
-    
+
     [Property("X coordinate polynomial"), DefaultPropertyValue("x"), ToolTip(
          "A polynomial that calculates the X coordinate\n" + TOOLTIP)]
     public string XFunc { get; set; }
-    
+
     [Property("Y coordinate polynomial"), DefaultPropertyValue("y"), ToolTip(
          "A polynomial that calculates the Y coordinate\n" + TOOLTIP)]
     public string YFunc { get; set; }
-    
+
     [Property("Pressure polynomial"), DefaultPropertyValue("p"), ToolTip(
          "A polynomial that calculates the pressure\n" + TOOLTIP)]
     public string PFunc { get; set; }
+
+    [Property("X tilt polynomial"), DefaultPropertyValue("tx"), ToolTip(
+         "A polynomial that calculates the X tilt\n" + TOOLTIP)]
+    public string TXFunc { get; set; }
+
+    [Property("Y tilt polynomial"), DefaultPropertyValue("ty"), ToolTip(
+         "A polynomial that calculates the Y tilt\n" + TOOLTIP)]
+    public string TYFunc { get; set; }
 
     [TabletReference]
     public TabletReference TabletReference { get; set; }
